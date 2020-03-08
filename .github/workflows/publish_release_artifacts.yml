@@ -8,7 +8,7 @@ env:
   QTWEBKIT_BUILD_NUMBER: 1583342509
   QTWEBKIT_BRANCH: 5.212
   QTWEBKIT_DOWNLOAD_ROOT: "http://download.qt.io/snapshots/ci/qtwebkit"
-  QTWEBKIT_SNAPSHOTS_REPO: "https://code.qt.io/cgit/qt/qtwebkit.git"
+  QTWEBKIT_SNAPSHOTS_REPO: "git://code.qt.io/qt/qtwebkit.git"
 
 jobs:
   release:
@@ -29,7 +29,7 @@ jobs:
       run: |
         snapshot_sha1=$(cat SHA1)
         pwd -P
-        git clone --depth 1 "$QTWEBKIT_DOWNLOAD_ROOT" qtwebkit-snapshots
+        git clone --depth 1 "$QTWEBKIT_SNAPSHOTS_REPO" qtwebkit-snapshots
         cd qtwebkit-snapshots
         original_sha1=$(git log -n1 $snapshot_sha1 | awk '/\s+Import QtWebKit commit [0-9a-f]+$/ {print $NF}')
         #original_tag=$(git describe $original_sha1)
