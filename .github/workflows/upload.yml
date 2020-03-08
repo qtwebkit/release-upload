@@ -1,0 +1,23 @@
+name: Upload release artifacts
+
+on: push
+
+env:
+  QTWEBKIT_BUILD_NUMBER: 1583342509
+
+
+jobs:
+  build:
+    name: Upload
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+
+    steps:
+    - name: Download QtWebKit artifacts
+      id: qtwebkit_artifacts
+      run: |
+        wget -r -np -nH --cut-dirs=6 --reject="index.html*,*.mirrorlist" http://download.qt.io/snapshots/ci/qtwebkit/5.212/${QTWEBKIT_BUILD_NUMBER}/qtwebkit
+        wget -r -np -nH --cut-dirs=6 --reject="index.html*,*.mirrorlist" http://download.qt.io/snapshots/ci/qtwebkit/5.212/${QTWEBKIT_BUILD_NUMBER}/src/submodules/
+        ls -la
+        cat SHA1
