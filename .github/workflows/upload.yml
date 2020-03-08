@@ -20,10 +20,36 @@ jobs:
       id: qtwebkit_artifacts
       run: |
         download_qtwebkit_dir() {
-            wget -r -np -nH --cut-dirs="$1" --reject="index.html*,*.mirrorlist" "${QTWEBKIT_DOWNLOAD_ROOT}/${QTWEBKIT_BRANCH}/${QTWEBKIT_BUILD_NUMBER}/$2/"
-            ls -la
+          wget -r -np -nH --cut-dirs="$1" --reject="index.html*,*.mirrorlist" "${QTWEBKIT_DOWNLOAD_ROOT}/${QTWEBKIT_BRANCH}/${QTWEBKIT_BUILD_NUMBER}/$2/"
+          ls -la
         }
         download_qtwebkit_dir 6 qtwebkit
         download_qtwebkit_dir 7 src/submodules
         download_qtwebkit_dir 6 debug_information
         cat SHA1
+
+  release:
+    if: contains(github.ref, 'tags/v')
+    runs-on: ubuntu-latest
+    needs: build
+
+    steps:
+    - name: Create Release
+      id: create_release
+      uses: actions/create-release@v1.0.1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ github.ref }}
+        release_name: Release ${{ github.ref }}
+        draft: false
+        prerelease: false
+
+    - name: Store Release url
+      run: |
+        echo "${{ steps.create_release.outputs.upload_url }}" > ./upload_url
+
+    - uses: actions/upload-artifact@v1
+      with:
+        path: ./upload_url
+        name: upload_url
