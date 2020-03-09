@@ -56,7 +56,16 @@ jobs:
 
           Binary packages should be unpacked inside installation of Qt 5.13 SDK which you can obtain at https://www.qt.io/download-qt-installer.
 
-    - name: Upload files to a GitHub release
+    - name: Upload sources
+      uses: csexton/release-asset-action@v2
+      with:
+        files: |
+          ${{ github.ref }}.tar.xz
+          ${{ github.ref }}.zip
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        release-url: ${{ steps.create_release.outputs.upload_url }}
+
+    - name: Upload binaries
       uses: csexton/release-asset-action@v2
       with:
         pattern: "*.7z"
