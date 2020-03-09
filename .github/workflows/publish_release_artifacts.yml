@@ -30,6 +30,9 @@ jobs:
         snapshot_sha1=$(cat SHA1)
         git clone --depth 1 "$QTWEBKIT_SNAPSHOTS_REPO" qtwebkit-snapshots
         cd qtwebkit-snapshots
+        ls -la
+        echo GIT_DIR=$GIT_DIR
+        git log -n1
         git log -n1 $snapshot_sha1
         git log -n1 $snapshot_sha1 | awk '/\s+Import QtWebKit commit [0-9a-f]+$/ {print $NF}'
         original_sha1=$(git log -n1 $snapshot_sha1 | awk '/\s+Import QtWebKit commit [0-9a-f]+$/ {print $NF}')
