@@ -7,6 +7,7 @@ on:
 
 env:
   # Cannot put build number here because build number is not yet known when final commit has to be done
+  QTWEBKIT_BUILD_NUMBER: ${{ secrets.QTWEBKIT_BUILD_NUMBER }}
   QT_VERSION: 5.14.1
   QTWEBKIT_BRANCH: 5.212
   QTWEBKIT_DOWNLOAD_ROOT: "http://download.qt.io/snapshots/ci/qtwebkit"
@@ -20,11 +21,11 @@ jobs:
     - name: Download QtWebKit artifacts
       id: qtwebkit_artifacts
       run: |
-        echo "============================== Download QtWebKit build ${{ secrets.QTWEBKIT_BUILD_NUMBER }} ==============================" # Spoil out "secret"
+        echo "============================== Download QtWebKit build $QTWEBKIT_BUILD_NUMBER ==============================" # Spoil out "secret"
         echo
 
         download_qtwebkit_dir() {
-          wget -r -np -nH --cut-dirs="$1" --reject="index.html*,*.mirrorlist" "${QTWEBKIT_DOWNLOAD_ROOT}/${QTWEBKIT_BRANCH}/${{ secrets.QTWEBKIT_BUILD_NUMBER }}/$2/"
+          wget -r -np -nH --cut-dirs="$1" --reject="index.html*,*.mirrorlist" "${QTWEBKIT_DOWNLOAD_ROOT}/${QTWEBKIT_BRANCH}/${QTWEBKIT_BUILD_NUMBER}/$2/"
         }
 
         download_qtwebkit_dir 6 qtwebkit
@@ -71,7 +72,7 @@ jobs:
 
           Binary packages should be unpacked inside installation of Qt $QT_VERSION SDK which you can obtain at https://www.qt.io/download-qt-installer.
 
-          Coin build number was ${{ secrets.QTWEBKIT_BUILD_NUMBER }}
+          Coin build number was $QTWEBKIT_BUILD_NUMBER
 
     - name: Upload tar.xz sources
       uses: actions/upload-release-asset@v1.0.2
@@ -80,7 +81,7 @@ jobs:
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
         asset_path: ./qtwebkit-opensource-src-${{ env.QTWEBKIT_BRANCH }}.tar.xz
-        asset_name: ${{ steps.tag_name.outputs.tag }}.zip
+        asset_name: ${{ steps.tag_name.outputs.tag }}.tar.xz
         asset_content_type: application/x-xz
 
     - name: Upload zip sources
