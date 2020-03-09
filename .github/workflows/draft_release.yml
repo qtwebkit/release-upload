@@ -1,0 +1,64 @@
+name: Draft Release For Tag
+
+on:
+  push:
+    tags:
+      - qtwebkit-*
+
+env:
+  QTWEBKIT_BUILD_NUMBER: 1583342509
+  QTWEBKIT_BRANCH: 5.212
+  QTWEBKIT_DOWNLOAD_ROOT: "http://download.qt.io/snapshots/ci/qtwebkit"
+  QTWEBKIT_SNAPSHOTS_REPO: "git://code.qt.io/qt/qtwebkit.git"
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Download QtWebKit artifacts
+      id: qtwebkit_artifacts
+      run: |
+        download_qtwebkit_dir() {
+          wget -r -np -nH --cut-dirs="$1" --reject="index.html*,*.mirrorlist" "${QTWEBKIT_DOWNLOAD_ROOT}/${QTWEBKIT_BRANCH}/${QTWEBKIT_BUILD_NUMBER}/$2/"
+        }
+        download_qtwebkit_dir 6 qtwebkit
+        download_qtwebkit_dir 7 src/submodules
+        download_qtwebkit_dir 6 debug_information
+
+    - name: Parse snapshot tag
+      run: |
+        snapshot_sha1=$(cat SHA1)
+        git clone --depth 10 "$QTWEBKIT_SNAPSHOTS_REPO" qtwebkit-snapshots -b $QTWEBKIT_BRANCH
+        cd qtwebkit-snapshots
+        original_sha1=$(git log -n1 $snapshot_sha1 | awk '/\s+Import QtWebKit commit [0-9a-f]+$/ {print $NF}')
+        #original_tag=$(git describe $original_sha1)
+        #echo "Snapshot commit: $snapshot_sha1 Original commit: $original_tag ( $original_sha1 )"
+        echo "Snapshot commit: $snapshot_sha1 Original commit: $original_sha1"
+        echo "github.sha = ${{ github.sha }}"
+
+    - name: Create Release
+      id: create_release
+      uses: actions/create-release@v1.0.1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ github.ref }}
+        release_name: QtWebKit ${{ github.ref }} FIXME!
+        draft: true
+        prerelease: true
+        body: |
+          **WARNING: This release is based on old WebKit revision with known unpatched vulnerabilities. Please use it carefully and avoid visiting untrusted websites and using it for transmission of sensitive data. Wait for new release from qtwebkit-dev branch to use it with untrusted content.**
+
+          **IMPORTANT: Please download our source code packages ${{ github.ref }}.tar.xz or ${{ github.ref }}.zip and NOT the automatically created GitHub packages at the bottom of the list.**
+
+          <Put changelog here>
+
+          Binary packages should be unpacked inside installation of Qt 5.13 SDK which you can obtain at https://www.qt.io/download-qt-installer.
+
+    - name: Upload files to a GitHub release
+      uses: csexton/release-asset-action@v2
+      with:
+        pattern: "*.7z"
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        release-url: ${{ steps.create_release.outputs.upload_url }}
