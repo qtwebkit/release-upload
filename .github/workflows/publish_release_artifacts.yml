@@ -28,7 +28,7 @@ jobs:
     - name: Verify snapshot tag
       run: |
         snapshot_sha1=$(cat SHA1)
-        git clone --depth 1 "$QTWEBKIT_SNAPSHOTS_REPO" qtwebkit-snapshots -b $QTWEBKIT_BRANCH
+        git clone --depth 10 "$QTWEBKIT_SNAPSHOTS_REPO" qtwebkit-snapshots -b $QTWEBKIT_BRANCH
         cd qtwebkit-snapshots
         ls -la
         echo GIT_DIR=$GIT_DIR
