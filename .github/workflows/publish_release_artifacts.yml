@@ -28,22 +28,19 @@ jobs:
     - name: Verify snapshot tag
       run: |
         snapshot_sha1=$(cat SHA1)
-        pwd -P
         git clone --depth 1 "$QTWEBKIT_SNAPSHOTS_REPO" qtwebkit-snapshots
         cd qtwebkit-snapshots
+        git log -n1 $snapshot_sha1
+        git log -n1 $snapshot_sha1 | awk '/\s+Import QtWebKit commit [0-9a-f]+$/ {print $NF}'
         original_sha1=$(git log -n1 $snapshot_sha1 | awk '/\s+Import QtWebKit commit [0-9a-f]+$/ {print $NF}')
         #original_tag=$(git describe $original_sha1)
         #echo "Snapshot commit: $snapshot_sha1 Original commit: $original_tag ( $original_sha1 )"
         echo "Snapshot commit: $snapshot_sha1 Original commit: $original_sha1"
-        echo "github.ref = ${{ github.ref }}"
-        pwd -P
-
-    - name: Stupid test
-      run: pwd -P
+        echo "github.ref = ${{ github.ref }}\ngithub.sha = ${{ github.sha }}"
 
     - name: Upload files to a GitHub release
-      uses: csexton/release-asset-action@v2
+      uses: skx/github-action-publish-binaries@release-1.3
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        pattern: "*.7z"
-        github-token: ${{ secrets.GITHUB_TOKEN }}
-        release-url: ${{ steps.create_release.outputs.upload_url }}
+        args: "*.7z"
