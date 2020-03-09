@@ -21,9 +21,6 @@ jobs:
     - name: Download QtWebKit artifacts
       id: qtwebkit_artifacts
       run: |
-        echo "============================== Download QtWebKit build $QTWEBKIT_BUILD_NUMBER ==============================" # Spoil out "secret"
-        echo
-
         download_qtwebkit_dir() {
           wget -r -np -nH --cut-dirs="$1" --reject="index.html*,*.mirrorlist" "${QTWEBKIT_DOWNLOAD_ROOT}/${QTWEBKIT_BRANCH}/${QTWEBKIT_BUILD_NUMBER}/$2/"
         }
@@ -70,9 +67,9 @@ jobs:
 
           <Insert changelog here>
 
-          Binary packages should be unpacked inside installation of Qt $QT_VERSION SDK which you can obtain at https://www.qt.io/download-qt-installer.
+          Binary packages should be unpacked inside installation of Qt ${{ env.QT_VERSION }} SDK which you can obtain at https://www.qt.io/download-qt-installer.
 
-          Coin build number was $QTWEBKIT_BUILD_NUMBER
+          Coin build number was ${{ env.QTWEBKIT_BUILD_NUMBER }}
 
     - name: Upload tar.xz sources
       uses: actions/upload-release-asset@v1.0.2
