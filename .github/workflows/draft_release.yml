@@ -61,13 +61,13 @@ jobs:
         draft: true
         prerelease: true
         body: |
-          **WARNING: This release is based on old WebKit revision with known unpatched vulnerabilities. Please use it carefully and avoid visiting untrusted websites and using it for transmission of sensitive data. Wait for new release from qtwebkit-dev branch to use it with untrusted content.**
+          **WARNING**: This release is based on **old WebKit revision** with known unpatched vulnerabilities. Please use it carefully and avoid visiting untrusted websites and using it for transmission of sensitive data. Please wait for new release from **qtwebkit-dev** branch to use it with **untrusted content**.
 
-          **IMPORTANT: Please download our source code packages ${{ steps.tag_name.outputs.tag }}.tar.xz or ${{ steps.tag_name.outputs.tag }}.zip and NOT the automatically created GitHub packages at the bottom of the list.**
+          **IMPORTANT**: Please download our source code packages **${{ steps.tag_name.outputs.tag }}.tar.xz** or **${{ steps.tag_name.outputs.tag }}.zip** (Windows line breaks) and **NOT the automatically created GitHub packages at the bottom of the list**.
 
           <Insert changelog here>
 
-          Binary packages should be unpacked inside installation of Qt ${{ env.QT_VERSION }} SDK which you can obtain at https://www.qt.io/download-qt-installer.
+          Binary packages should be unpacked inside installation of Qt **${{ env.QT_VERSION }}** which you can obtain at https://www.qt.io/download-qt-installer.
 
           Coin build number was ${{ env.QTWEBKIT_BUILD_NUMBER }}
 
