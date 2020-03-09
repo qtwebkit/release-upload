@@ -2,7 +2,7 @@ name: Upload release artifacts
 
 on:
   release:
-    types: [published]
+    types: [created]
 
 env:
   QTWEBKIT_BUILD_NUMBER: 1583342509
