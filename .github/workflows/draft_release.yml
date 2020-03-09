@@ -10,7 +10,7 @@ env:
   QTWEBKIT_BUILD_NUMBER: ${{ secrets.QTWEBKIT_BUILD_NUMBER }}
   QT_VERSION: 5.14.1
   QTWEBKIT_BRANCH: 5.212
-  QTWEBKIT_DOWNLOAD_ROOT: "http://download.qt.io/snapshots/ci/qtwebkit"
+  QTWEBKIT_DOWNLOAD_ROOT: "https://download.qt.io/snapshots/ci/qtwebkit"
   QTWEBKIT_SNAPSHOTS_REPO: "git://code.qt.io/qt/qtwebkit.git"
 
 jobs:
