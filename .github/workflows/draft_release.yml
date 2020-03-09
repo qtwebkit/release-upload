@@ -6,7 +6,8 @@ on:
       - qtwebkit-*
 
 env:
-  QTWEBKIT_BUILD_NUMBER: 1583342509
+  # Cannot put build number here because build number is not yet known when final commit has to be done
+  QT_VERSION: 5.14.1
   QTWEBKIT_BRANCH: 5.212
   QTWEBKIT_DOWNLOAD_ROOT: "http://download.qt.io/snapshots/ci/qtwebkit"
   QTWEBKIT_SNAPSHOTS_REPO: "git://code.qt.io/qt/qtwebkit.git"
@@ -19,12 +20,25 @@ jobs:
     - name: Download QtWebKit artifacts
       id: qtwebkit_artifacts
       run: |
+        echo "============================== Download QtWebKit build ${{ secrets.QTWEBKIT_BUILD_NUMBER }} ==============================" # Spoil out "secret"
+        echo
+
         download_qtwebkit_dir() {
-          wget -r -np -nH --cut-dirs="$1" --reject="index.html*,*.mirrorlist" "${QTWEBKIT_DOWNLOAD_ROOT}/${QTWEBKIT_BRANCH}/${QTWEBKIT_BUILD_NUMBER}/$2/"
+          wget -r -np -nH --cut-dirs="$1" --reject="index.html*,*.mirrorlist" "${QTWEBKIT_DOWNLOAD_ROOT}/${QTWEBKIT_BRANCH}/${{ secrets.QTWEBKIT_BUILD_NUMBER }}/$2/"
         }
+
         download_qtwebkit_dir 6 qtwebkit
         download_qtwebkit_dir 7 src/submodules
         download_qtwebkit_dir 6 debug_information
+
+    - name: Get tag name
+      id: tag_name
+      uses: olegtarasov/get-tag@v2
+    - name: Get short tag name
+      id: tag_name_short
+      uses: olegtarasov/get-tag@v2
+      with:
+        tagRegex: "qtwebkit-(.*)"
 
     - name: Parse snapshot tag
       run: |
@@ -35,7 +49,8 @@ jobs:
         #original_tag=$(git describe $original_sha1)
         #echo "Snapshot commit: $snapshot_sha1 Original commit: $original_tag ( $original_sha1 )"
         echo "Snapshot commit: $snapshot_sha1 Original commit: $original_sha1"
-        echo "github.sha = ${{ github.sha }}"
+        echo "Pushed tag: ${{ steps.tag_name.outputs.tag }}"
+        echo "Pushed SHA: ${{ github.sha }}"
 
     - name: Create Release
       id: create_release
@@ -43,27 +58,40 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        tag_name: ${{ github.ref }}
-        release_name: QtWebKit ${{ github.ref }} FIXME!
+        tag_name: ${{ steps.tag_name.outputs.tag }}
+        release_name: QtWebKit ${{ steps.tag_name_short.outputs.tag }} FIXME!
         draft: true
         prerelease: true
         body: |
           **WARNING: This release is based on old WebKit revision with known unpatched vulnerabilities. Please use it carefully and avoid visiting untrusted websites and using it for transmission of sensitive data. Wait for new release from qtwebkit-dev branch to use it with untrusted content.**
 
-          **IMPORTANT: Please download our source code packages ${{ github.ref }}.tar.xz or ${{ github.ref }}.zip and NOT the automatically created GitHub packages at the bottom of the list.**
+          **IMPORTANT: Please download our source code packages ${{ steps.tag_name.outputs.tag }}.tar.xz or ${{ steps.tag_name.outputs.tag }}.zip and NOT the automatically created GitHub packages at the bottom of the list.**
 
-          <Put changelog here>
+          <Insert changelog here>
 
-          Binary packages should be unpacked inside installation of Qt 5.13 SDK which you can obtain at https://www.qt.io/download-qt-installer.
+          Binary packages should be unpacked inside installation of Qt $QT_VERSION SDK which you can obtain at https://www.qt.io/download-qt-installer.
 
-    - name: Upload sources
-      uses: csexton/release-asset-action@v2
+          Coin build number was ${{ secrets.QTWEBKIT_BUILD_NUMBER }}
+
+    - name: Upload tar.xz sources
+      uses: actions/upload-release-asset@v1.0.2
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        files: |
-          ${{ github.ref }}.tar.xz
-          ${{ github.ref }}.zip
-        github-token: ${{ secrets.GITHUB_TOKEN }}
-        release-url: ${{ steps.create_release.outputs.upload_url }}
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./qtwebkit-opensource-src-${{ env.QTWEBKIT_BRANCH }}.tar.xz
+        asset_name: ${{ steps.tag_name.outputs.tag }}.zip
+        asset_content_type: application/x-xz
+
+    - name: Upload zip sources
+      uses: actions/upload-release-asset@v1.0.2
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./qtwebkit-opensource-src-${{ env.QTWEBKIT_BRANCH }}.zip
+        asset_name: ${{ steps.tag_name.outputs.tag }}.zip
+        asset_content_type: application/zip
 
     - name: Upload binaries
       uses: csexton/release-asset-action@v2
