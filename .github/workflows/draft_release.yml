@@ -50,6 +50,19 @@ jobs:
         echo "Pushed tag: ${{ steps.tag_name.outputs.tag }}"
         echo "Pushed SHA: ${{ github.sha }}"
 
+    - name: Repack sources
+      run: |
+        tar xJf qtwebkit-opensource-src-${{ env.QTWEBKIT_BRANCH }}.tar.xz
+        mv qtwebkit-opensource-src-${{ env.QTWEBKIT_BRANCH }} ${{ steps.tag_name.outputs.tag }}
+        tar cf ${{ steps.tag_name.outputs.tag }}.tar ${{ steps.tag_name.outputs.tag }}
+        xz -9 ${{ steps.tag_name.outputs.tag }}.tar
+        rm -rf ${{ steps.tag_name.outputs.tag }}
+
+        unzip -q qtwebkit-opensource-src-${{ env.QTWEBKIT_BRANCH }}.zip
+        mv qtwebkit-opensource-src-${{ env.QTWEBKIT_BRANCH }} ${{ steps.tag_name.outputs.tag }}
+        zip -q9r ${{ steps.tag_name.outputs.tag }}.zip ${{ steps.tag_name.outputs.tag }}
+        rm -rf ${{ steps.tag_name.outputs.tag }}
+
     - name: Create Release
       id: create_release
       uses: actions/create-release@v1.0.1
@@ -71,25 +84,14 @@ jobs:
 
           Coin build number was ${{ env.QTWEBKIT_BUILD_NUMBER }}
 
-    - name: Upload tar.xz sources
-      uses: actions/upload-release-asset@v1.0.2
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    - name: Upload sources
+      uses: csexton/release-asset-action@v2
       with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ./qtwebkit-opensource-src-${{ env.QTWEBKIT_BRANCH }}.tar.xz
-        asset_name: ${{ steps.tag_name.outputs.tag }}.tar.xz
-        asset_content_type: application/x-xz
-
-    - name: Upload zip sources
-      uses: actions/upload-release-asset@v1.0.2
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ./qtwebkit-opensource-src-${{ env.QTWEBKIT_BRANCH }}.zip
-        asset_name: ${{ steps.tag_name.outputs.tag }}.zip
-        asset_content_type: application/zip
+        files: |
+          ${{ steps.tag_name.outputs.tag }}.tar.xz
+          ${{ steps.tag_name.outputs.tag }}.zip
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        release-url: ${{ steps.create_release.outputs.upload_url }}
 
     - name: Upload binaries
       uses: csexton/release-asset-action@v2
